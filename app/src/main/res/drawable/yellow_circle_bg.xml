@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<level-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/yellow_A400" />
+            <size
+                android:width="30dp"
+                android:height="30dp" />
+        </shape>
+
+        <shape
+            android:innerRadiusRatio="3"
+            android:shape="ring"
+            android:thickness="10dp"
+            android:useLevel="false">
+
+            <solid android:color="@color/grey_300" />
+
+            <size
+                android:width="35dp"
+                android:height="35dp" />
+
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/yellow_A400" />
+            <size
+                android:width="30dp"
+                android:height="30dp" />
+        </shape>
+    </item>
+
+</level-list>
