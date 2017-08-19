@@ -25,7 +25,7 @@ import java.util.Calendar;
  * Created by k3mshiro on 8/16/17.
  */
 
-public class EditNoteFrg extends Fragment implements View.OnClickListener {
+public class CreateNoteFrg extends Fragment implements View.OnClickListener {
 
     public static final CharSequence RED = "red";
     public static final CharSequence ORANGE = "orange";
@@ -34,7 +34,7 @@ public class EditNoteFrg extends Fragment implements View.OnClickListener {
     public static final CharSequence BLUE = "blue";
     public static final CharSequence INDIGO = "indigo";
     public static final CharSequence VIOLET = "violet";
-    private static final String TAG = EditNoteFrg.class.getName();
+    private static final String TAG = CreateNoteFrg.class.getName();
 
     private View view;
     private Button btnSave, btnAlarmSet, btnInfoLook;
@@ -49,7 +49,7 @@ public class EditNoteFrg extends Fragment implements View.OnClickListener {
 
     private FragmentManager fragmentMrg;
 
-    public EditNoteFrg() {
+    public CreateNoteFrg() {
     }
 
     @Nullable

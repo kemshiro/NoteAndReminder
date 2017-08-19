@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -218,9 +217,9 @@ public class ListFrg extends Fragment implements View.OnClickListener {
     private void showCreateNoteScreen() {
         fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        createNoteFrg = new EditNoteFrg();
+        createNoteFrg = new CreateNoteFrg();
 
-        fragmentTransaction.replace(R.id.act_main, createNoteFrg, EditNoteFrg.class.getName());
+        fragmentTransaction.replace(R.id.act_main, createNoteFrg, CreateNoteFrg.class.getName());
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
