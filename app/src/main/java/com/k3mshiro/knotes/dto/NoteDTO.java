@@ -5,17 +5,36 @@ package com.k3mshiro.knotes.dto;
  */
 
 public class NoteDTO {
+    private int id;
     private String title;
     private String date;
     private String content;
     private String color;
 
+    public NoteDTO() {
+    }
+
+    public NoteDTO(int id, String title, String date, String content, String color) {
+        this.id = id;
+        this.title = title;
+        this.date = date;
+        this.content = content;
+        this.color = color;
+    }
 
     public NoteDTO(String title, String date, String content, String color) {
         this.title = title;
         this.date = date;
         this.content = content;
         this.color = color;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getTitle() {

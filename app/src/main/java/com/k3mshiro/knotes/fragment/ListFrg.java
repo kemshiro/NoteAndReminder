@@ -1,6 +1,8 @@
 package com.k3mshiro.knotes.fragment;
 
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +18,7 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.k3mshiro.knotes.R;
+import com.k3mshiro.knotes.activity.MainAct;
 import com.k3mshiro.knotes.adapter.NoteAdapter;
 import com.k3mshiro.knotes.customview.VerticalItemSpace;
 import com.k3mshiro.knotes.dao.NoteDAO;
@@ -38,10 +41,13 @@ public class ListFrg extends Fragment implements View.OnClickListener {
     private FloatingActionButton fabNewPhoto;
     private FloatingActionButton fabNewAlarm;
     private Animation goNanimation, goNWanimation, goWanimation, retNanimation, retNWanimation, retWanimation;
+    private MainAct mainAct;
 
     private NoteAdapter mNoteAdapter;
     private List<NoteDTO> noteDTOs;
     private NoteDAO noteDAO;
+    private FragmentManager fragmentManager;
+    private Fragment createNoteFrg;
 
     boolean isFloatingActionButonShow = false;
 
@@ -57,18 +63,9 @@ public class ListFrg extends Fragment implements View.OnClickListener {
         return view;
     }
 
-    private void initNotes() {
-        noteDAO = new NoteDAO(getActivity());
-        noteDTOs = noteDAO.getListNotes();
-        for (int i = 0; i < noteDTOs.size(); i++) {
-            Log.d(TAG, noteDTOs.get(i).getTitle() + "\n");
-        }
-        mNoteAdapter = new NoteAdapter(getActivity(), noteDTOs);
-        rvList.setAdapter(mNoteAdapter);
-        mNoteAdapter.notifyDataSetChanged();
-    }
-
     private void initViews() {
+
+        mainAct = (MainAct) getActivity();
 
         rvList = (RecyclerView) view.findViewById(R.id.cardList);
 
@@ -95,6 +92,16 @@ public class ListFrg extends Fragment implements View.OnClickListener {
         fabNewAlarm.setOnClickListener(this);
 
     }
+
+    private void initNotes() {
+        noteDAO = mainAct.getNoteDAO();
+        noteDTOs = noteDAO.getListNotes();
+
+        mNoteAdapter = new NoteAdapter(getActivity(), noteDTOs);
+        rvList.setAdapter(mNoteAdapter);
+        mNoteAdapter.notifyDataSetChanged();
+    }
+
 
     private void showAllFloatingActionButon() {
         fabNewPhoto.show();
@@ -184,6 +191,8 @@ public class ListFrg extends Fragment implements View.OnClickListener {
                 returnNW();
                 returnW();
                 isFloatingActionButonShow = false;
+
+                showCreateNoteScreen();
                 break;
 
             case R.id.fab_new_alarm:
@@ -204,6 +213,16 @@ public class ListFrg extends Fragment implements View.OnClickListener {
                 isFloatingActionButonShow = false;
                 break;
         }
+    }
+
+    private void showCreateNoteScreen() {
+        fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        createNoteFrg = new EditNoteFrg();
+
+        fragmentTransaction.replace(R.id.act_main, createNoteFrg, EditNoteFrg.class.getName());
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
 

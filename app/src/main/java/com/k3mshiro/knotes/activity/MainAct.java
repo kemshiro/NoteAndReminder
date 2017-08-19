@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.k3mshiro.knotes.R;
+import com.k3mshiro.knotes.dao.NoteDAO;
 import com.k3mshiro.knotes.fragment.ListFrg;
 
 /**
@@ -25,6 +26,11 @@ public class MainAct extends AppCompatActivity {
     public static final int REQUEST_CODE_PERMISSIONS = 100;
     private FragmentManager fragmentManager;
     private Fragment listNotesFrg;
+    private NoteDAO noteDAO;
+
+    public NoteDAO getNoteDAO() {
+        return noteDAO;
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -67,6 +73,8 @@ public class MainAct extends AppCompatActivity {
 
     private void initializeComponents() {
         setContentView(R.layout.act_main);
+        noteDAO = new NoteDAO(this);
+        noteDAO.openDatabase();
         showListNotesScreen();
     }
 

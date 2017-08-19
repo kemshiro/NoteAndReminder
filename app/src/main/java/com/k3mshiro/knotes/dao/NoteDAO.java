@@ -4,126 +4,105 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Environment;
-import android.util.Log;
 
+
+import com.k3mshiro.knotes.database.Database;
 import com.k3mshiro.knotes.dto.NoteDTO;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by k3mshiro on 8/18/17.
+ * Created by k3mshiro on 7/24/17.
  */
 
 public class NoteDAO {
-    public static final String DB_PATH = Environment.getDataDirectory()
-            + "/data/com.k3mshiro.knotes/databases";
 
-    public static final String DB_NAME = "NoteManagement";
-    public static final String TAG = NoteDAO.class.getName();
-    public static final String TABLE_NAME = "Note";
-    public static final String COLUMN_NOTE_TITLE = "title";
-    public static final String COLUMN_NOTE_DATE = "date";
-    public static final String COLUMN_NOTE_CONTENT = "content";
-    public static final String COLUMN_NOTE_COLOR = "color";
-
-    public Context mContext;
-    public SQLiteDatabase mSQLiteDB;
+    private SQLiteDatabase mSQLiteDB;
+    private Database db;
+    private Context mContext;
 
     public NoteDAO(Context mContext) {
-        this.mContext = mContext;
-        copyDatabase();
+        db = new Database(mContext);
     }
 
-    public void copyDatabase() {
-        new File(DB_PATH).mkdir();
-        try {
-            File file = new File(DB_PATH + "/" + DB_NAME);
-            if (file.exists()) file.delete();
 
-            InputStream input = mContext.getAssets().open(DB_NAME);
-
-            file.createNewFile();
-            FileOutputStream output = new FileOutputStream(file);
-
-            int len;
-            byte buff[] = new byte[1024];
-            while ((len = input.read(buff)) > 0) {
-                output.write(buff, 0, len);
-            }
-            output.close();
-            input.close();
-            Log.i(TAG, "Copy DB is done");
-        } catch (Exception e) {
-            Log.e(TAG, e.toString());
-        }
+    public void openDatabase() {
+        mSQLiteDB = db.getWritableDatabase();
     }
 
-    public void openDB() {
-        if (mSQLiteDB == null || !mSQLiteDB.isOpen()) {
-            mSQLiteDB = SQLiteDatabase.openDatabase(DB_PATH + "/" + DB_NAME,
-                    null,
-                    SQLiteDatabase.OPEN_READWRITE);
-        }
+    public void closeDatabase() {
+        db.close();
     }
 
-    public void closeDB() {
-        if (mSQLiteDB != null && mSQLiteDB.isOpen()) {
-            mSQLiteDB.close();
-        }
+    public boolean createNewNote(NoteDTO newNote) {
+
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(Database.COLUMN_NOTE_TITLE, newNote.getTitle().toString());
+        contentValues.put(Database.COLUMN_NOTE_DATE, newNote.getDate().toString());
+        contentValues.put(Database.COLUMN_NOTE_CONTENT, newNote.getContent().toString());
+        contentValues.put(Database.COLUMN_NOTE_COLOR, newNote.getColor().toString());
+
+        long idNhanVien = mSQLiteDB.insert(Database.TABLE_NOTE, null, contentValues);
+
+        return idNhanVien != 0;
     }
 
-    public boolean insert(String title, String date, String content, String color) {
-        openDB();
-        ContentValues values = new ContentValues();
-
-        values.put(COLUMN_NOTE_TITLE, title);
-        values.put(COLUMN_NOTE_DATE, date);
-        values.put(COLUMN_NOTE_CONTENT, content);
-        values.put(COLUMN_NOTE_COLOR, color);
-
-
-        long result = mSQLiteDB.insert(TABLE_NAME, null, values);
-        closeDB();
-        return result > -1;
-    }
 
     public List<NoteDTO> getListNotes() {
-        openDB();
 
         List<NoteDTO> listNoteDTOs = new ArrayList<>();
-        String sqlCommand = "SELECT * FROM " + TABLE_NAME;
+        String sqlCommand = "SELECT * FROM " + Database.TABLE_NOTE;
         Cursor cursor = mSQLiteDB.rawQuery(sqlCommand, null);
-        int titleIndex = cursor.getColumnIndex(COLUMN_NOTE_TITLE);
-        int dateIndex = cursor.getColumnIndex(COLUMN_NOTE_DATE);
-        int contentIndex = cursor.getColumnIndex(COLUMN_NOTE_CONTENT);
-        int colorIndex = cursor.getColumnIndex(COLUMN_NOTE_COLOR);
+        int idIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_ID);
+        int titleIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_TITLE);
+        int dateIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_DATE);
+        int contentIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_CONTENT);
+        int colorIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_COLOR);
 
         cursor.moveToFirst();
 
         while (cursor.isAfterLast() == false) {
+            int id = cursor.getInt(idIndex);
             String title = cursor.getString(titleIndex);
             String date = cursor.getString(dateIndex);
             String content = cursor.getString(contentIndex);
             String color = cursor.getString(colorIndex);
-            NoteDTO newNote = new NoteDTO(title, date, content, color);
+            NoteDTO newNote = new NoteDTO(id, title, date, content, color);
 
             listNoteDTOs.add(newNote);
 
             cursor.moveToNext();
         }
 
-        closeDB();
-
-        for (int i = 0; i < listNoteDTOs.size(); i++) {
-            Log.i(TAG, listNoteDTOs.get(i).getContent());
-        }
-
 
         return listNoteDTOs;
+    }
+
+    public boolean deleteNote(NoteDTO deletedNote) {
+
+        int result = mSQLiteDB.delete(Database.TABLE_NOTE, Database.COLUMN_NOTE_ID + " = " + deletedNote.getId(),
+                null);
+
+
+        return result != 0;
+    }
+
+    public boolean editNote(NoteDTO editedNote) {
+
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(Database.COLUMN_NOTE_TITLE, editedNote.getTitle());
+        contentValues.put(Database.COLUMN_NOTE_DATE, editedNote.getDate());
+        contentValues.put(Database.COLUMN_NOTE_CONTENT, editedNote.getContent());
+        contentValues.put(Database.COLUMN_NOTE_COLOR, editedNote.getColor());
+
+        int result = mSQLiteDB.update(Database.TABLE_NOTE,
+                contentValues,
+                Database.COLUMN_NOTE_ID + " = " + editedNote.getId(),
+                null);
+
+        return result != 0;
     }
 }
