@@ -22,6 +22,17 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     private List<NoteDTO> mNoteDTOs;
     private LayoutInflater mLayoutInflater;
 
+    private static OnItemClickListener listener;
+
+    public interface OnItemClickListener {
+        void onItemClick(View itemView, int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        NoteAdapter.listener = listener;
+    }
+
+
     public NoteAdapter(Context context, List<NoteDTO> mNoteDTOs) {
         this.mContext = context;
         this.mNoteDTOs = mNoteDTOs;
@@ -41,7 +52,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         holder.tvTitle.setText(note.getTitle());
         holder.tvContent.setText(note.getContent());
         holder.tvDate.setBackgroundColor(Color.parseColor(note.getColor()));
-
+        holder.tvTitle.setTextColor(Color.parseColor(note.getColor()));
     }
 
     @Override
@@ -54,11 +65,19 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         private TextView tvContent;
         private TextView tvTitle;
 
-        public NoteViewHolder(View itemView) {
+        public NoteViewHolder(final View itemView) {
             super(itemView);
             tvDate = (TextView) itemView.findViewById(R.id.tvDate);
             tvContent = (TextView) itemView.findViewById(R.id.tvContent);
             tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (listener != null) {
+                        listener.onItemClick(itemView, getLayoutPosition());
+                    }
+                }
+            });
         }
     }
 }

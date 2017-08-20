@@ -14,16 +14,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.k3mshiro.knotes.R;
+import com.k3mshiro.knotes.dao.Constant;
 import com.k3mshiro.knotes.dao.NoteDAO;
-import com.k3mshiro.knotes.fragment.ListFrg;
+import com.k3mshiro.knotes.dto.NoteDTO;
+import com.k3mshiro.knotes.fragment.EditNoteFrg;
+import com.k3mshiro.knotes.fragment.ListNoteFrg;
 
 /**
  * Created by k3mshiro on 8/18/17.
  */
 
-public class MainAct extends AppCompatActivity {
+public class MainAct extends AppCompatActivity implements ListNoteFrg.IFragmentConnection {
 
-    public static final int REQUEST_CODE_PERMISSIONS = 100;
+    private static final int REQUEST_CODE_PERMISSIONS = 100;
+
     private FragmentManager fragmentManager;
     private Fragment listNotesFrg;
     private NoteDAO noteDAO;
@@ -81,10 +85,24 @@ public class MainAct extends AppCompatActivity {
 
     private void showListNotesScreen() {
         fragmentManager = getFragmentManager();
-        listNotesFrg = new ListFrg();
+        listNotesFrg = new ListNoteFrg();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        fragmentTransaction.replace(R.id.act_main, listNotesFrg, ListFrg.class.getName());
+        fragmentTransaction.replace(R.id.act_main, listNotesFrg, ListNoteFrg.class.getName());
+        fragmentTransaction.commit();
+    }
+
+    @Override
+    public void sendDataToEditNoteFrg(NoteDTO note) {
+        EditNoteFrg editNoteFrg = new EditNoteFrg();
+        Bundle bundle = new Bundle();
+
+        bundle.putSerializable(Constant.KEY_EDIT_NOTE, note);
+        editNoteFrg.setArguments(bundle);
+
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.act_main, editNoteFrg, EditNoteFrg.class.getName());
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 }

@@ -39,12 +39,12 @@ public class NoteDAO {
 
         ContentValues contentValues = new ContentValues();
 
-        contentValues.put(Database.COLUMN_NOTE_TITLE, newNote.getTitle().toString());
-        contentValues.put(Database.COLUMN_NOTE_DATE, newNote.getDate().toString());
-        contentValues.put(Database.COLUMN_NOTE_CONTENT, newNote.getContent().toString());
-        contentValues.put(Database.COLUMN_NOTE_COLOR, newNote.getColor().toString());
+        contentValues.put(Constant.COLUMN_NOTE_TITLE, newNote.getTitle().toString());
+        contentValues.put(Constant.COLUMN_NOTE_DATE, newNote.getDate().toString());
+        contentValues.put(Constant.COLUMN_NOTE_CONTENT, newNote.getContent().toString());
+        contentValues.put(Constant.COLUMN_NOTE_COLOR, newNote.getColor().toString());
 
-        long idNhanVien = mSQLiteDB.insert(Database.TABLE_NOTE, null, contentValues);
+        long idNhanVien = mSQLiteDB.insert(Constant.TABLE_NOTE, null, contentValues);
 
         return idNhanVien != 0;
     }
@@ -53,13 +53,13 @@ public class NoteDAO {
     public List<NoteDTO> getListNotes() {
 
         List<NoteDTO> listNoteDTOs = new ArrayList<>();
-        String sqlCommand = "SELECT * FROM " + Database.TABLE_NOTE;
+        String sqlCommand = "SELECT * FROM " + Constant.TABLE_NOTE;
         Cursor cursor = mSQLiteDB.rawQuery(sqlCommand, null);
-        int idIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_ID);
-        int titleIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_TITLE);
-        int dateIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_DATE);
-        int contentIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_CONTENT);
-        int colorIndex = cursor.getColumnIndex(Database.COLUMN_NOTE_COLOR);
+        int idIndex = cursor.getColumnIndex(Constant.COLUMN_NOTE_ID);
+        int titleIndex = cursor.getColumnIndex(Constant.COLUMN_NOTE_TITLE);
+        int dateIndex = cursor.getColumnIndex(Constant.COLUMN_NOTE_DATE);
+        int contentIndex = cursor.getColumnIndex(Constant.COLUMN_NOTE_CONTENT);
+        int colorIndex = cursor.getColumnIndex(Constant.COLUMN_NOTE_COLOR);
 
         cursor.moveToFirst();
 
@@ -82,7 +82,7 @@ public class NoteDAO {
 
     public boolean deleteNote(NoteDTO deletedNote) {
 
-        int result = mSQLiteDB.delete(Database.TABLE_NOTE, Database.COLUMN_NOTE_ID + " = " + deletedNote.getId(),
+        int result = mSQLiteDB.delete(Constant.TABLE_NOTE, Constant.COLUMN_NOTE_ID + " = " + deletedNote.getId(),
                 null);
 
 
@@ -93,14 +93,14 @@ public class NoteDAO {
 
         ContentValues contentValues = new ContentValues();
 
-        contentValues.put(Database.COLUMN_NOTE_TITLE, editedNote.getTitle());
-        contentValues.put(Database.COLUMN_NOTE_DATE, editedNote.getDate());
-        contentValues.put(Database.COLUMN_NOTE_CONTENT, editedNote.getContent());
-        contentValues.put(Database.COLUMN_NOTE_COLOR, editedNote.getColor());
+        contentValues.put(Constant.COLUMN_NOTE_TITLE, editedNote.getTitle());
+        contentValues.put(Constant.COLUMN_NOTE_DATE, editedNote.getDate());
+        contentValues.put(Constant.COLUMN_NOTE_CONTENT, editedNote.getContent());
+        contentValues.put(Constant.COLUMN_NOTE_COLOR, editedNote.getColor());
 
-        int result = mSQLiteDB.update(Database.TABLE_NOTE,
+        int result = mSQLiteDB.update(Constant.TABLE_NOTE,
                 contentValues,
-                Database.COLUMN_NOTE_ID + " = " + editedNote.getId(),
+                Constant.COLUMN_NOTE_ID + " = " + editedNote.getId(),
                 null);
 
         return result != 0;

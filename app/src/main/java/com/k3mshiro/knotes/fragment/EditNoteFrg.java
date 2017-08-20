@@ -23,12 +23,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
- * Created by k3mshiro on 8/16/17.
+ * Created by k3mshiro on 8/19/17.
  */
 
-public class CreateNoteFrg extends Fragment implements View.OnClickListener {
+public class EditNoteFrg extends Fragment implements View.OnClickListener {
 
-    private static final String TAG = CreateNoteFrg.class.getName();
+    private static final String TAG = EditNoteFrg.class.getName();
 
     private View view;
     private Button btnSave, btnAlarmSet, btnInfoLook;
@@ -39,13 +39,15 @@ public class CreateNoteFrg extends Fragment implements View.OnClickListener {
     private MainAct mainAct;
 
     private NoteDAO noteDAO;
-    private String parseColor = "#4CAF50";
+    private String parseColor;
+    private NoteDTO editedNote;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_edited_note, container, false);
         initViews();
+        getDatas();
         initNotes();
         return view;
     }
@@ -102,11 +104,23 @@ public class CreateNoteFrg extends Fragment implements View.OnClickListener {
         noteDAO = mainAct.getNoteDAO();
     }
 
+    private void getDatas() {
+        Bundle bundle = getArguments();
+
+        editedNote = (NoteDTO) bundle.getSerializable(Constant.KEY_EDIT_NOTE);
+
+        edtTitle.setText(editedNote.getTitle());
+        edtContent.setText(editedNote.getContent());
+
+        parseColor = editedNote.getColor();
+        edtTitle.setTextColor(Color.parseColor(parseColor));
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_save:
-                createNewNote();
+                editNote();
                 break;
             case R.id.btn_alarm_set:
                 break;
@@ -150,21 +164,23 @@ public class CreateNoteFrg extends Fragment implements View.OnClickListener {
 
     }
 
-    private void createNewNote() {
-        String title = edtTitle.getText().toString();
-        String content = edtContent.getText().toString();
+    private void editNote() {
         Calendar c = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         String date = dateFormat.format(c.getTime()).toString();
-        String color = parseColor;
 
-        NoteDTO newNote = new NoteDTO(title, date, content, color);
-        boolean result = noteDAO.createNewNote(newNote);
+        editedNote.setTitle(edtTitle.getText().toString());
+        editedNote.setContent(edtContent.getText().toString());
+        editedNote.setDate(date);
+        editedNote.setColor(parseColor);
+
+        boolean result = noteDAO.editNote(editedNote);
 
         if (result) {
             Toast.makeText(getActivity(), "Successed", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(getActivity(), "Failed", Toast.LENGTH_SHORT).show();
         }
+
     }
 }

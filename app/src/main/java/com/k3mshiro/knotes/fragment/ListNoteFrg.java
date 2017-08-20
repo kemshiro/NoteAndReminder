@@ -3,11 +3,13 @@ package com.k3mshiro.knotes.fragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,9 +31,9 @@ import java.util.List;
  * Created by k3mshiro on 7/21/17.
  */
 
-public class ListFrg extends Fragment implements View.OnClickListener {
-    private static final String TAG = ListFrg.class.getName();
-    private static final int VERTICAL_ITEM_SPACE = 40;
+public class ListNoteFrg extends Fragment implements View.OnClickListener, NoteAdapter.OnItemClickListener {
+    private static final String TAG = ListNoteFrg.class.getName();
+    private static final int VERTICAL_ITEM_SPACE = 30;
 
     private View view;
     private RecyclerView rvList;
@@ -45,12 +47,22 @@ public class ListFrg extends Fragment implements View.OnClickListener {
     private NoteAdapter mNoteAdapter;
     private List<NoteDTO> noteDTOs;
     private NoteDAO noteDAO;
+    private boolean isFloatingActionButonShow = false;
+
     private FragmentManager fragmentManager;
     private Fragment createNoteFrg;
+    private IFragmentConnection connection;
 
-    boolean isFloatingActionButonShow = false;
 
-    public ListFrg() {
+    public interface IFragmentConnection {
+        void sendDataToEditNoteFrg(NoteDTO note);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        connection = (IFragmentConnection) context;
     }
 
     @Nullable
@@ -70,6 +82,8 @@ public class ListFrg extends Fragment implements View.OnClickListener {
 
         LinearLayoutManager llm = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
         rvList.setLayoutManager(llm);
+
+        rvList.setHasFixedSize(true); // nang cao hieu suat khi cac item cung do rong va chieu cao
         //add ItemDecoration - them khoang cach
         rvList.addItemDecoration(new VerticalItemSpace(VERTICAL_ITEM_SPACE));
 
@@ -98,6 +112,8 @@ public class ListFrg extends Fragment implements View.OnClickListener {
 
         mNoteAdapter = new NoteAdapter(getActivity(), noteDTOs);
         rvList.setAdapter(mNoteAdapter);
+
+        mNoteAdapter.setOnItemClickListener(this);
         mNoteAdapter.notifyDataSetChanged();
     }
 
@@ -164,6 +180,14 @@ public class ListFrg extends Fragment implements View.OnClickListener {
         fabNewNote.startAnimation(retNanimation);
     }
 
+    @Override
+    public void onItemClick(View itemView, int position) {
+        NoteDTO note = noteDTOs.get(position);
+        Log.d(TAG, "ID: " + note.getId() + "\n"
+                + "Title: " + note.getTitle() + "\n");
+
+        connection.sendDataToEditNoteFrg(note);
+    }
 
     @Override
     public void onClick(View v) {

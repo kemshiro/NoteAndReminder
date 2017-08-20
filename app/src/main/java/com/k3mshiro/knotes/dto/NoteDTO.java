@@ -1,18 +1,17 @@
 package com.k3mshiro.knotes.dto;
 
+import java.io.Serializable;
+
 /**
  * Created by k3mshiro on 7/21/17.
  */
 
-public class NoteDTO {
+public class NoteDTO implements Serializable {
     private int id;
     private String title;
     private String date;
     private String content;
     private String color;
-
-    public NoteDTO() {
-    }
 
     public NoteDTO(int id, String title, String date, String content, String color) {
         this.id = id;
