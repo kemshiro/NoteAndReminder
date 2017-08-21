@@ -4,11 +4,18 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,50 +81,8 @@ public class ListNoteFrg extends Fragment implements View.OnClickListener, NoteA
         return view;
     }
 
-    private void initViews() {
 
-        mainAct = (MainAct) getActivity();
-
-        rvList = (RecyclerView) view.findViewById(R.id.cardList);
-
-        LinearLayoutManager llm = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
-        rvList.setLayoutManager(llm);
-
-        rvList.setHasFixedSize(true); // nang cao hieu suat khi cac item cung do rong va chieu cao
-        //add ItemDecoration - them khoang cach
-        rvList.addItemDecoration(new VerticalItemSpace(VERTICAL_ITEM_SPACE));
-
-        /* them divider
-        rvList.addItemDecoration(new DividerItem(getActivity()));
-        //or
-        rvList.addItemDecoration(
-                new DividerItem(getActivity(), R.drawable.divider));
-         */
-
-        fab = (FloatingActionButton) view.findViewById(R.id.fab);
-        fabNewNote = (FloatingActionButton) view.findViewById(R.id.fab_new_note);
-        fabNewPhoto = (FloatingActionButton) view.findViewById(R.id.fab_new_photo);
-        fabNewAlarm = (FloatingActionButton) view.findViewById(R.id.fab_new_alarm);
-
-        fab.setOnClickListener(this);
-        fabNewNote.setOnClickListener(this);
-        fabNewPhoto.setOnClickListener(this);
-        fabNewAlarm.setOnClickListener(this);
-
-    }
-
-    private void initNotes() {
-        noteDAO = mainAct.getNoteDAO();
-        noteDTOs = noteDAO.getListNotes();
-
-        mNoteAdapter = new NoteAdapter(getActivity(), noteDTOs);
-        rvList.setAdapter(mNoteAdapter);
-
-        mNoteAdapter.setOnItemClickListener(this);
-        mNoteAdapter.notifyDataSetChanged();
-    }
-
-
+    /***************** Animation Setting **********************************/
     private void showAllFloatingActionButon() {
         fabNewPhoto.show();
         fabNewNote.show();
@@ -178,6 +143,84 @@ public class ListNoteFrg extends Fragment implements View.OnClickListener, NoteA
         paramsW.bottomMargin = (int) (fabNewNote.getWidth() * 1.8);
         fabNewNote.setLayoutParams(paramsW);
         fabNewNote.startAnimation(retNanimation);
+    }
+
+
+    /********************** View Setting ********************/
+
+    private void initViews() {
+
+        mainAct = (MainAct) getActivity();
+
+        rvList = (RecyclerView) view.findViewById(R.id.cardList);
+
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+        rvList.setLayoutManager(llm);
+
+        rvList.setHasFixedSize(true); // nang cao hieu suat khi cac item cung do rong va chieu cao
+        //add ItemDecoration - them khoang cach
+        rvList.addItemDecoration(new VerticalItemSpace(VERTICAL_ITEM_SPACE));
+
+        /* them divider
+        rvList.addItemDecoration(new DividerItem(getActivity()));
+        //or
+        rvList.addItemDecoration(
+                new DividerItem(getActivity(), R.drawable.divider));
+         */
+
+        fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        fabNewNote = (FloatingActionButton) view.findViewById(R.id.fab_new_note);
+        fabNewPhoto = (FloatingActionButton) view.findViewById(R.id.fab_new_photo);
+        fabNewAlarm = (FloatingActionButton) view.findViewById(R.id.fab_new_alarm);
+
+        fab.setOnClickListener(this);
+        fabNewNote.setOnClickListener(this);
+        fabNewPhoto.setOnClickListener(this);
+        fabNewAlarm.setOnClickListener(this);
+
+    }
+
+    private void initNotes() {
+        noteDAO = mainAct.getNoteDAO();
+        noteDTOs = noteDAO.getListNotes();
+
+        mNoteAdapter = new NoteAdapter(getActivity(), noteDTOs);
+        rvList.setAdapter(mNoteAdapter);
+
+        mNoteAdapter.setOnItemClickListener(this);
+        mNoteAdapter.notifyDataSetChanged();
+
+        initSwipe();
+    }
+
+    private void initSwipe() {
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                Toast.makeText(getActivity(), "on Move", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDirection) {
+                int position = viewHolder.getAdapterPosition();
+                switch (swipeDirection) {
+                    case ItemTouchHelper.LEFT:
+                        //Remove swiped item from list and notify the RecyclerView
+                        deleteNote(position);
+                        break;
+                    case ItemTouchHelper.RIGHT:
+                        //Edit swiped item from list and notify the RecyclerView
+                        NoteDTO note = noteDTOs.get(position);
+                        connection.sendDataToEditNoteFrg(note);
+                    default:
+                        break;
+                }
+            }
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(rvList);
     }
 
     @Override
@@ -248,5 +291,16 @@ public class ListNoteFrg extends Fragment implements View.OnClickListener, NoteA
         fragmentTransaction.commit();
     }
 
+    private void deleteNote(int position) {
+        NoteDTO deletedNote = noteDTOs.get(position);
+        boolean result = noteDAO.deleteNote(deletedNote);
+        noteDTOs.remove(position);
+        mNoteAdapter.notifyDataSetChanged();
+        if (result == true) {
+            Toast.makeText(getActivity(), "Done", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getActivity(), "Failed", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 }
